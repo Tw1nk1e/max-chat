@@ -1,5 +1,7 @@
+import { LoginPage } from '../pages/login'
+
 function App() {
-  return <div>max-chat</div>
+  return <LoginPage />
 }
 
 export default App

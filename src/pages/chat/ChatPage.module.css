@@ -1,0 +1,29 @@
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  height: 100vh;
+}
+
+.sidebar {
+  min-width: 0;
+  height: 100%;
+}
+
+.main {
+  min-width: 0;
+  height: 100%;
+}
+
+@media (max-width: 767px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .layout[data-chat-active='true'] .sidebar {
+    display: none;
+  }
+
+  .layout[data-chat-active='false'] .main {
+    display: none;
+  }
+}

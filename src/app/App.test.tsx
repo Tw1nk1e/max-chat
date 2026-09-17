@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest'
 import App from './App'
 
 describe('App', () => {
-  it('renders without crashing', () => {
+  it('renders the login page', () => {
     render(<App />)
-    expect(screen.getByText('max-chat')).toBeInTheDocument()
+
+    expect(screen.getByRole('heading', { name: 'MAX Chat' })).toBeInTheDocument()
+    expect(screen.getByLabelText('idInstance')).toBeInTheDocument()
   })
 })
