@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { useSessionStore } from '../entities/session'
+import { idleReceiveNotification } from '../test/msw/handlers'
+import { server } from '../test/msw/server'
 import { createQueryWrapper } from '../test/queryWrapper'
 import App from './App'
 
@@ -18,11 +20,13 @@ describe('App', () => {
   })
 
   it('renders the chat page when a session is present', () => {
-    useSessionStore.getState().setCredentials({
+    const credentials = {
       apiUrl: 'https://test.green-api.local',
       idInstance: '1234567890',
       apiTokenInstance: 'test-token',
-    })
+    }
+    useSessionStore.getState().setCredentials(credentials)
+    server.use(idleReceiveNotification(credentials))
 
     render(<App />, { wrapper: createQueryWrapper() })
 

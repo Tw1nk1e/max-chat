@@ -19,9 +19,7 @@ function useSendMessage() {
       return sendMessage(credentials, chatId, text)
     },
     onSuccess: (result, { chatId, messageId }) => {
-      useChatStore
-        .getState()
-        .updateMessage(chatId, messageId, { status: 'sent', idMessage: result.idMessage })
+      useChatStore.getState().confirmMessage(chatId, messageId, result.idMessage)
     },
     onError: (_error, { chatId, messageId }) => {
       useChatStore.getState().updateMessage(chatId, messageId, { status: 'error' })

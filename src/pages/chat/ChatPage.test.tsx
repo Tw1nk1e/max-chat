@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, delay, http } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { useChatStore } from '../../entities/chat'
 import { useSessionStore } from '../../entities/session'
+import { idleReceiveNotification } from '../../test/msw/handlers'
 import { server } from '../../test/msw/server'
 import { createQueryWrapper } from '../../test/queryWrapper'
 import ChatPage from './ChatPage'
@@ -30,6 +31,7 @@ async function createChatByPhone(phone: string) {
 
 beforeEach(() => {
   useSessionStore.getState().setCredentials(credentials)
+  server.use(idleReceiveNotification(credentials))
 })
 
 afterEach(() => {
@@ -99,6 +101,54 @@ describe('ChatPage', () => {
 
     await waitFor(() => expect(useChatStore.getState().chats[0].messages[0].status).toBe('sent'))
     expect(screen.queryByText('Не отправлено')).not.toBeInTheDocument()
+  })
+
+  it('shows an incoming message from an unknown number and creates a chat for it', async () => {
+    let receiveCount = 0
+    server.use(
+      http.get(methodUrl('receiveNotification'), async () => {
+        receiveCount += 1
+        if (receiveCount > 1) {
+          await delay('infinite')
+        }
+        return HttpResponse.json({
+          receiptId: 7,
+          body: {
+            typeWebhook: 'incomingMessageReceived',
+            instanceData: { idInstance: 1234567890, wid: '79990000000@c.us', typeInstance: 'v3' },
+            timestamp: 1763115112,
+            idMessage: 'in-1',
+            senderData: {
+              chatId: '20000000',
+              chatName: 'Иван',
+              chatType: 'user',
+              sender: '20000000',
+              senderName: 'Иван',
+              senderType: 'user',
+              senderContactName: 'Иван',
+              senderPhoneNumber: 79995554433,
+            },
+            messageData: { typeMessage: 'textMessage', textMessageData: { textMessage: 'Ответ' } },
+          },
+        })
+      }),
+      http.delete(`${methodUrl('deleteNotification')}/7`, () =>
+        HttpResponse.json({ result: true, reason: '' }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText('+7 999 555-44-33')).toBeInTheDocument()
+    await userEvent.click(screen.getByText('+7 999 555-44-33'))
+
+    expect(await screen.findAllByText('Ответ')).toHaveLength(2)
+  })
+
+  it('shows the reconnecting indicator when receiving fails', async () => {
+    server.use(http.get(methodUrl('receiveNotification'), () => HttpResponse.error()))
+    renderPage()
+
+    expect(await screen.findByText('Переподключение')).toBeInTheDocument()
   })
 
   it('clears the session and the chats on logout', async () => {

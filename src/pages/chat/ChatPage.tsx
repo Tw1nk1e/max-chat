@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useChatStore } from '../../entities/chat'
+import { getChatTitle, useChatStore } from '../../entities/chat'
 import { useLogout } from '../../features/auth'
 import { NewChatForm } from '../../features/create-chat'
+import { useReceiveMessages } from '../../features/receive-messages'
 import { MessageInput, useSendMessage } from '../../features/send-message'
-import { formatPhone, formatTime } from '../../shared/lib'
+import { formatTime } from '../../shared/lib'
 import { ChatList } from '../../widgets/chat-list'
 import { ChatWindow } from '../../widgets/chat-window'
 import styles from './ChatPage.module.css'
@@ -14,6 +15,7 @@ function ChatPage() {
   const selectChat = useChatStore((state) => state.selectChat)
   const { send, retry } = useSendMessage()
   const logout = useLogout()
+  const connectionStatus = useReceiveMessages()
   const [isNewChatOpen, setIsNewChatOpen] = useState(false)
 
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? null
@@ -22,7 +24,7 @@ function ChatPage() {
     const lastMessage = chat.messages.at(-1)
     return {
       id: chat.id,
-      phone: formatPhone(chat.phone),
+      phone: getChatTitle(chat),
       lastMessage: lastMessage?.text ?? '',
       time: lastMessage ? formatTime(lastMessage.timestamp) : '',
     }
@@ -48,12 +50,12 @@ function ChatPage() {
           newChatForm={
             isNewChatOpen ? <NewChatForm onCreated={() => setIsNewChatOpen(false)} /> : null
           }
-          connectionStatus="online"
+          connectionStatus={connectionStatus}
         />
       </aside>
       <main className={styles.main}>
         <ChatWindow
-          phone={activeChat ? formatPhone(activeChat.phone) : null}
+          phone={activeChat ? getChatTitle(activeChat) : null}
           messages={windowMessages}
           composer={
             activeChat ? (
