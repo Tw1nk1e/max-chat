@@ -1,0 +1,22 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.advanced summary {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-2);
+}
+
+.advanced > *:not(summary) {
+  margin-top: var(--spacing-2);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}

@@ -99,3 +99,8 @@
   color: var(--color-text-secondary);
   flex-shrink: 0;
 }
+
+.footer {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-top: 1px solid var(--color-border);
+}

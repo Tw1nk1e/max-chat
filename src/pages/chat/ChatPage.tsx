@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLogout } from '../../features/auth'
 import { ChatList } from '../../widgets/chat-list'
 import type { ChatListItem } from '../../widgets/chat-list'
 import { ChatWindow } from '../../widgets/chat-window'
@@ -20,6 +21,7 @@ const mockMessages: Record<string, ChatWindowMessage[]> = {
 
 function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(mockChats[0].id)
+  const logout = useLogout()
 
   const activeChat = mockChats.find((chat) => chat.id === activeChatId) ?? null
   const messages = activeChatId ? mockMessages[activeChatId] : []
@@ -32,6 +34,7 @@ function ChatPage() {
           activeChatId={activeChatId}
           onSelectChat={setActiveChatId}
           onNewChat={() => {}}
+          onLogout={logout}
           connectionStatus="online"
         />
       </aside>

@@ -17,6 +17,7 @@ describe('ChatList', () => {
         activeChatId={null}
         onSelectChat={onSelectChat}
         onNewChat={() => {}}
+        onLogout={() => {}}
         connectionStatus="online"
       />,
     )
@@ -34,6 +35,7 @@ describe('ChatList', () => {
         activeChatId={null}
         onSelectChat={() => {}}
         onNewChat={onNewChat}
+        onLogout={() => {}}
         connectionStatus="online"
       />,
     )
@@ -43,6 +45,24 @@ describe('ChatList', () => {
     expect(onNewChat).toHaveBeenCalledOnce()
   })
 
+  it('calls onLogout when the button is clicked', async () => {
+    const onLogout = vi.fn()
+    render(
+      <ChatList
+        chats={chats}
+        activeChatId={null}
+        onSelectChat={() => {}}
+        onNewChat={() => {}}
+        onLogout={onLogout}
+        connectionStatus="online"
+      />,
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Выйти' }))
+
+    expect(onLogout).toHaveBeenCalledOnce()
+  })
+
   it('shows the reconnecting status', () => {
     render(
       <ChatList
@@ -50,6 +70,7 @@ describe('ChatList', () => {
         activeChatId={null}
         onSelectChat={() => {}}
         onNewChat={() => {}}
+        onLogout={() => {}}
         connectionStatus="reconnecting"
       />,
     )
@@ -64,6 +85,7 @@ describe('ChatList', () => {
         activeChatId={null}
         onSelectChat={() => {}}
         onNewChat={() => {}}
+        onLogout={() => {}}
         connectionStatus="online"
       />,
     )

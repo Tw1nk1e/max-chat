@@ -15,6 +15,7 @@ type ChatListProps = {
   activeChatId: string | null
   onSelectChat: (id: string) => void
   onNewChat: () => void
+  onLogout: () => void
   connectionStatus: ConnectionStatus
 }
 
@@ -23,6 +24,7 @@ function ChatList({
   activeChatId,
   onSelectChat,
   onNewChat,
+  onLogout,
   connectionStatus,
 }: ChatListProps) {
   return (
@@ -61,6 +63,11 @@ function ChatList({
           ))}
         </ul>
       )}
+      <div className={styles.footer}>
+        <Button variant="ghost" onClick={onLogout}>
+          Выйти
+        </Button>
+      </div>
     </div>
   )
 }
