@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { useSessionStore } from './sessionStore'
 
 const credentials = {
-  apiUrl: 'https://7103.api.green-api.com',
+  apiUrl: 'https://3100.api.green-api.com',
   idInstance: '1234567890',
   apiTokenInstance: 'test-token',
 }

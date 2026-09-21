@@ -65,7 +65,7 @@ function LoginForm() {
         <Input
           label="apiUrl"
           name="apiUrl"
-          placeholder="https://7103.api.green-api.com"
+          placeholder="https://3100.api.green-api.com"
           value={apiUrl}
           onChange={(event) => handleApiUrlChange(event.target.value)}
           error={apiUrlError ?? undefined}
