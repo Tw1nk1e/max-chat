@@ -21,7 +21,6 @@ afterEach(() => {
 async function fillForm(apiTokenInstance: string): Promise<void> {
   await userEvent.type(screen.getByLabelText('idInstance'), idInstance)
   await userEvent.type(screen.getByLabelText('apiTokenInstance'), apiTokenInstance)
-  await userEvent.click(screen.getByText('Дополнительно'))
   await userEvent.type(screen.getByLabelText('apiUrl'), apiUrl)
   await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 }
@@ -61,15 +60,23 @@ describe('LoginForm', () => {
     expect(useSessionStore.getState().credentials).toBeNull()
   })
 
-  it('opens the advanced section and shows an error when apiUrl is empty', async () => {
+  it('does not send a request while apiUrl is empty', async () => {
     render(<LoginForm />)
 
     await userEvent.type(screen.getByLabelText('idInstance'), idInstance)
     await userEvent.type(screen.getByLabelText('apiTokenInstance'), 'test-token')
     await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
 
-    expect(screen.getByLabelText('apiUrl')).toBeVisible()
-    expect(screen.getByText('Укажите apiUrl из личного кабинета GREEN-API')).toBeInTheDocument()
+    expect(screen.getByLabelText('apiUrl')).toBeInvalid()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(useSessionStore.getState().credentials).toBeNull()
+  })
+
+  it('only accepts a full address in apiUrl', async () => {
+    render(<LoginForm />)
+
+    await userEvent.type(screen.getByLabelText('apiUrl'), '3100.api.green-api.com')
+
+    expect(screen.getByLabelText('apiUrl')).toBeInvalid()
   })
 })

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { FormEvent, SyntheticEvent } from 'react'
+import type { FormEvent } from 'react'
 import { Button, Input, Spinner } from '../../../shared/ui'
 import { useLogin } from '../model/useLogin'
 import styles from './LoginForm.module.css'
@@ -9,31 +9,11 @@ function LoginForm() {
   const [idInstance, setIdInstance] = useState('')
   const [apiTokenInstance, setApiTokenInstance] = useState('')
   const [apiUrl, setApiUrl] = useState('')
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
-  const [apiUrlError, setApiUrlError] = useState<string | null>(null)
 
   const isPending = status === 'pending'
 
-  function handleToggleAdvanced(event: SyntheticEvent<HTMLDetailsElement>) {
-    setIsAdvancedOpen(event.currentTarget.open)
-  }
-
-  function handleApiUrlChange(value: string) {
-    setApiUrl(value)
-    if (apiUrlError) {
-      setApiUrlError(null)
-    }
-  }
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
-    if (!apiUrl.trim()) {
-      setIsAdvancedOpen(true)
-      setApiUrlError('Укажите apiUrl из личного кабинета GREEN-API')
-      return
-    }
-
     void login({
       idInstance: idInstance.trim(),
       apiTokenInstance: apiTokenInstance.trim(),
@@ -60,17 +40,16 @@ function LoginForm() {
         value={apiTokenInstance}
         onChange={(event) => setApiTokenInstance(event.target.value)}
       />
-      <details className={styles.advanced} open={isAdvancedOpen} onToggle={handleToggleAdvanced}>
-        <summary>Дополнительно</summary>
-        <Input
-          label="apiUrl"
-          name="apiUrl"
-          placeholder="https://3100.api.green-api.com"
-          value={apiUrl}
-          onChange={(event) => handleApiUrlChange(event.target.value)}
-          error={apiUrlError ?? undefined}
-        />
-      </details>
+      <Input
+        label="apiUrl"
+        name="apiUrl"
+        type="url"
+        autoComplete="off"
+        placeholder="https://3100.api.green-api.com"
+        required
+        value={apiUrl}
+        onChange={(event) => setApiUrl(event.target.value)}
+      />
       {error ? (
         <p role="alert" className={styles.error}>
           {error}
