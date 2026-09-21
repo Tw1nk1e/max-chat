@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import ChatWindow from './ChatWindow'
 import type { ChatWindowMessage } from './ChatWindow'
 
@@ -17,6 +17,39 @@ function renderWindow(phone: string | null, messages: ChatWindowMessage[], onRet
     />,
   )
 }
+
+const scrolled: number[] = []
+
+function mockScrollGeometry(scrollHeight: number, clientHeight: number) {
+  Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+    configurable: true,
+    get: () => scrollHeight,
+  })
+  Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+    configurable: true,
+    get: () => clientHeight,
+  })
+  Object.defineProperty(HTMLElement.prototype, 'scrollTop', {
+    configurable: true,
+    get: () => 0,
+    set: (value: number) => scrolled.push(value),
+  })
+}
+
+afterEach(() => {
+  scrolled.length = 0
+  Reflect.deleteProperty(HTMLElement.prototype, 'scrollHeight')
+  Reflect.deleteProperty(HTMLElement.prototype, 'clientHeight')
+  Reflect.deleteProperty(HTMLElement.prototype, 'scrollTop')
+})
+
+const sent = (id: string, direction: 'in' | 'out' = 'in'): ChatWindowMessage => ({
+  id,
+  text: id,
+  time: '10:00',
+  direction,
+  status: 'sent',
+})
 
 describe('ChatWindow', () => {
   it('shows a placeholder when no chat is selected', () => {
@@ -63,5 +96,76 @@ describe('ChatWindow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }))
 
     expect(onRetry).toHaveBeenCalledWith('m1')
+  })
+
+  it('marks who wrote each message for screen readers', () => {
+    renderWindow('+7 999 123-45-67', [sent('a', 'out'), sent('b', 'in')])
+
+    expect(screen.getByText('Вы:')).toBeInTheDocument()
+    expect(screen.getByText('Собеседник:')).toBeInTheDocument()
+    expect(screen.getByRole('log', { name: 'Сообщения' })).toBeInTheDocument()
+  })
+
+  it('scrolls to the newest message when the chat opens and when messages arrive', () => {
+    mockScrollGeometry(1000, 400)
+    const { rerender } = render(
+      <ChatWindow
+        phone="+7 999 123-45-67"
+        messages={[sent('a')]}
+        composer={composer}
+        onBack={() => {}}
+        onRetryMessage={() => {}}
+      />,
+    )
+    expect(scrolled).toEqual([1000])
+
+    rerender(
+      <ChatWindow
+        phone="+7 999 123-45-67"
+        messages={[sent('a'), sent('b')]}
+        composer={composer}
+        onBack={() => {}}
+        onRetryMessage={() => {}}
+      />,
+    )
+
+    expect(scrolled).toEqual([1000, 1000])
+  })
+
+  it('does not pull the reader down when they scrolled up and an incoming message arrives', () => {
+    mockScrollGeometry(1000, 400)
+    const { rerender } = render(
+      <ChatWindow
+        phone="+7 999 123-45-67"
+        messages={[sent('a')]}
+        composer={composer}
+        onBack={() => {}}
+        onRetryMessage={() => {}}
+      />,
+    )
+    scrolled.length = 0
+
+    fireEvent.scroll(screen.getByRole('log'))
+    rerender(
+      <ChatWindow
+        phone="+7 999 123-45-67"
+        messages={[sent('a'), sent('b', 'in')]}
+        composer={composer}
+        onBack={() => {}}
+        onRetryMessage={() => {}}
+      />,
+    )
+    expect(scrolled).toEqual([])
+
+    rerender(
+      <ChatWindow
+        phone="+7 999 123-45-67"
+        messages={[sent('a'), sent('b', 'in'), sent('c', 'out')]}
+        composer={composer}
+        onBack={() => {}}
+        onRetryMessage={() => {}}
+      />,
+    )
+    expect(scrolled).toEqual([1000])
   })
 })

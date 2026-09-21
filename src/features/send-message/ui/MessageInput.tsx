@@ -3,6 +3,8 @@ import type { FormEvent, KeyboardEvent } from 'react'
 import { Button } from '../../../shared/ui'
 import styles from './MessageInput.module.css'
 
+const MAX_MESSAGE_LENGTH = 4000
+
 type MessageInputProps = {
   onSend: (text: string) => boolean
 }
@@ -39,6 +41,7 @@ function MessageInput({ onSend }: MessageInputProps) {
         className={styles.textarea}
         placeholder="Напишите сообщение"
         rows={1}
+        maxLength={MAX_MESSAGE_LENGTH}
         value={text}
         onChange={(event) => setText(event.target.value)}
         onKeyDown={handleKeyDown}

@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
+import type { ReactNode, UIEvent } from 'react'
 import { Avatar } from '../../shared/ui'
 import styles from './ChatWindow.module.css'
 
@@ -18,7 +19,29 @@ type ChatWindowProps = {
   onRetryMessage: (messageId: string) => void
 }
 
+const STICK_TO_BOTTOM_THRESHOLD = 80
+
 function ChatWindow({ phone, messages, composer, onBack, onRetryMessage }: ChatWindowProps) {
+  const listRef = useRef<HTMLDivElement>(null)
+  const stickToBottom = useRef(true)
+  const lastMessage = messages.at(-1)
+
+  useEffect(() => {
+    stickToBottom.current = true
+  }, [phone])
+
+  useEffect(() => {
+    const list = listRef.current
+    if (list && (stickToBottom.current || lastMessage?.direction === 'out')) {
+      list.scrollTop = list.scrollHeight
+    }
+  }, [phone, messages.length, lastMessage?.id, lastMessage?.direction])
+
+  function handleScroll(event: UIEvent<HTMLDivElement>) {
+    const { scrollHeight, scrollTop, clientHeight } = event.currentTarget
+    stickToBottom.current = scrollHeight - scrollTop - clientHeight < STICK_TO_BOTTOM_THRESHOLD
+  }
+
   if (!phone) {
     return (
       <div className={styles.emptyChat}>
@@ -29,7 +52,7 @@ function ChatWindow({ phone, messages, composer, onBack, onRetryMessage }: ChatW
 
   return (
     <div className={styles.window}>
-      <div className={styles.header}>
+      <header className={styles.header}>
         <button
           type="button"
           className={styles.back}
@@ -39,9 +62,16 @@ function ChatWindow({ phone, messages, composer, onBack, onRetryMessage }: ChatW
           ←
         </button>
         <Avatar label={phone.slice(-2)} />
-        <span className={styles.phone}>{phone}</span>
-      </div>
-      <div className={styles.messages} role="log" aria-live="polite">
+        <h2 className={styles.phone}>{phone}</h2>
+      </header>
+      <div
+        ref={listRef}
+        className={styles.messages}
+        role="log"
+        aria-live="polite"
+        aria-label="Сообщения"
+        onScroll={handleScroll}
+      >
         {messages.length === 0 ? (
           <p className={styles.emptyMessages}>Сообщений пока нет</p>
         ) : (
@@ -51,6 +81,9 @@ function ChatWindow({ phone, messages, composer, onBack, onRetryMessage }: ChatW
               className={message.direction === 'out' ? styles.bubbleOut : styles.bubbleIn}
               data-status={message.status}
             >
+              <span className={styles.visuallyHidden}>
+                {message.direction === 'out' ? 'Вы: ' : 'Собеседник: '}
+              </span>
               <p className={styles.bubbleText}>{message.text}</p>
               <span className={styles.bubbleMeta}>
                 {message.status === 'error' ? (

@@ -4,9 +4,14 @@ import { handleNotification } from './handleNotification'
 import { pollNotifications } from './pollNotifications'
 import type { ConnectionStatus } from './pollNotifications'
 
-function useReceiveMessages(): ConnectionStatus {
+type ReceiveState = {
+  status: ConnectionStatus
+  error: string | null
+}
+
+function useReceiveMessages(): ReceiveState {
   const credentials = useSessionStore((state) => state.credentials)
-  const [status, setStatus] = useState<ConnectionStatus>('online')
+  const [state, setState] = useState<ReceiveState>({ status: 'online', error: null })
 
   useEffect(() => {
     if (!credentials) {
@@ -17,14 +22,14 @@ function useReceiveMessages(): ConnectionStatus {
     void pollNotifications({
       credentials,
       signal: controller.signal,
-      onConnectionChange: setStatus,
+      onConnectionChange: (status, error) => setState({ status, error }),
       onNotification: handleNotification,
     })
 
     return () => controller.abort()
   }, [credentials])
 
-  return status
+  return state
 }
 
 export { useReceiveMessages }

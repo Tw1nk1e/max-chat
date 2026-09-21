@@ -151,6 +151,42 @@ describe('ChatPage', () => {
     expect(await screen.findByText('Переподключение')).toBeInTheDocument()
   })
 
+  it('explains a settings problem when the server answers 400', async () => {
+    server.use(
+      http.get(methodUrl('receiveNotification'), () => new HttpResponse(null, { status: 400 })),
+    )
+    renderPage()
+
+    expect(await screen.findByText(/очистите webhookUrl/)).toBeInTheDocument()
+  })
+
+  it('lists chats with the most recent activity first', () => {
+    const message = (idMessage: string, timestamp: number) => ({
+      id: idMessage,
+      idMessage,
+      text: idMessage,
+      timestamp,
+      direction: 'in' as const,
+      status: 'sent' as const,
+    })
+    const store = useChatStore.getState()
+    store.addChat({ id: '1', phone: '79990000001' })
+    store.addChat({ id: '2', phone: '79990000002' })
+    store.addChat({ id: '3', phone: '79990000003' })
+    store.addMessage('1', message('late', 3000))
+    store.addMessage('2', message('early', 1000))
+    renderPage()
+
+    const titles = screen
+      .getAllByRole('button')
+      .map((button) => button.textContent ?? '')
+      .filter((text) => text.includes('+7 999'))
+
+    expect(titles[0]).toContain('+7 999 000-00-03')
+    expect(titles[1]).toContain('+7 999 000-00-01')
+    expect(titles[2]).toContain('+7 999 000-00-02')
+  })
+
   it('clears the session and the chats on logout', async () => {
     useChatStore.getState().addChat({ id: '10000000', phone: '79991234567' })
     renderPage()

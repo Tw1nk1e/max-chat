@@ -30,11 +30,14 @@
 }
 
 .phone {
+  margin: 0;
+  font-size: var(--font-size-md);
   font-weight: 500;
 }
 
 .messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: var(--spacing-4);
   display: flex;
@@ -57,6 +60,7 @@
 
 .bubbleIn,
 .bubbleOut {
+  position: relative;
   max-width: 60%;
   padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
@@ -112,4 +116,16 @@
   .back {
     display: inline-flex;
   }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

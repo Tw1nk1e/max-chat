@@ -43,4 +43,10 @@ describe('MessageInput', () => {
 
     expect(onSend).toHaveBeenCalledWith('Привет')
   })
+
+  it('limits the message length to what GREEN-API accepts', () => {
+    render(<MessageInput onSend={() => true} />)
+
+    expect(screen.getByLabelText('Сообщение')).toHaveAttribute('maxlength', '4000')
+  })
 })

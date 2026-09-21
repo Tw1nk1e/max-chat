@@ -16,3 +16,9 @@
     transform: rotate(360deg);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .circle {
+    animation-duration: 2s;
+  }
+}

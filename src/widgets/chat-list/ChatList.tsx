@@ -19,6 +19,7 @@ type ChatListProps = {
   onLogout: () => void
   newChatForm?: ReactNode
   connectionStatus: ConnectionStatus
+  connectionError?: string | null
 }
 
 function ChatList({
@@ -29,6 +30,7 @@ function ChatList({
   onLogout,
   newChatForm,
   connectionStatus,
+  connectionError,
 }: ChatListProps) {
   return (
     <div className={styles.list}>
@@ -39,12 +41,14 @@ function ChatList({
         </Button>
       </div>
       {newChatForm}
-      <div className={styles.status}>
+      <div className={styles.status} role="status">
         <span
           className={connectionStatus === 'online' ? styles.dotOnline : styles.dotReconnecting}
+          aria-hidden="true"
         />
         {connectionStatus === 'online' ? 'В сети' : 'Переподключение'}
       </div>
+      {connectionError ? <p className={styles.connectionError}>{connectionError}</p> : null}
       {chats.length === 0 ? (
         <p className={styles.empty}>Чатов пока нет</p>
       ) : (
@@ -54,6 +58,7 @@ function ChatList({
               <button
                 type="button"
                 className={chat.id === activeChatId ? styles.itemActive : styles.item}
+                aria-current={chat.id === activeChatId ? 'true' : undefined}
                 onClick={() => onSelectChat(chat.id)}
               >
                 <Avatar label={chat.phone.slice(-2)} />

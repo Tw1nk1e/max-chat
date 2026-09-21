@@ -24,19 +24,23 @@ function notification(receiptId: number) {
 function startPolling(options?: { onNotification?: (body: NotificationBody) => void }) {
   const controller = new AbortController()
   const statuses: ConnectionStatus[] = []
+  const errors: (string | null)[] = []
   const received: NotificationBody[] = []
 
   const done = pollNotifications({
     credentials,
     signal: controller.signal,
-    onConnectionChange: (status) => statuses.push(status),
+    onConnectionChange: (status, error) => {
+      statuses.push(status)
+      errors.push(error)
+    },
     onNotification: (body) => {
       received.push(body)
       options?.onNotification?.(body)
     },
   })
 
-  return { controller, statuses, received, done }
+  return { controller, statuses, errors, received, done }
 }
 
 afterEach(() => {
@@ -184,6 +188,48 @@ describe('pollNotifications', () => {
 
     await vi.advanceTimersByTimeAsync(1000)
     expect(receiveCount).toBe(6)
+
+    controller.abort()
+    await done
+  })
+
+  it('explains a settings problem when the server answers 400', async () => {
+    server.use(http.get(receiveUrl, () => new HttpResponse(null, { status: 400 })))
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+
+    const { controller, statuses, errors, done } = startPolling()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(statuses.at(-1)).toBe('reconnecting')
+    expect(errors.at(-1)).toContain('webhookUrl')
+
+    controller.abort()
+    await done
+  })
+
+  it('shows the API message for rejected credentials and nothing for network errors', async () => {
+    let receiveCount = 0
+    server.use(
+      http.get(receiveUrl, async () => {
+        receiveCount += 1
+        if (receiveCount === 1) {
+          return new HttpResponse(null, { status: 401 })
+        }
+        if (receiveCount === 2) {
+          return HttpResponse.error()
+        }
+        await delay('infinite')
+        return new HttpResponse('')
+      }),
+    )
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+
+    const { controller, errors, done } = startPolling()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(errors).toEqual(['Неверный apiTokenInstance'])
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(errors).toEqual(['Неверный apiTokenInstance', null])
 
     controller.abort()
     await done

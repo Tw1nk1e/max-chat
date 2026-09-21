@@ -79,6 +79,44 @@ describe('ChatList', () => {
     expect(screen.getByText('new chat form')).toBeInTheDocument()
   })
 
+  it('marks the active chat for assistive technologies', () => {
+    render(
+      <ChatList
+        chats={chats}
+        activeChatId="2"
+        onSelectChat={() => {}}
+        onNewChat={() => {}}
+        onLogout={() => {}}
+        connectionStatus="online"
+      />,
+    )
+
+    expect(screen.getByText('+7 912 555-11-22').closest('button')).toHaveAttribute(
+      'aria-current',
+      'true',
+    )
+    expect(screen.getByText('+7 999 123-45-67').closest('button')).not.toHaveAttribute(
+      'aria-current',
+    )
+  })
+
+  it('explains why the connection is failing', () => {
+    render(
+      <ChatList
+        chats={chats}
+        activeChatId={null}
+        onSelectChat={() => {}}
+        onNewChat={() => {}}
+        onLogout={() => {}}
+        connectionStatus="reconnecting"
+        connectionError="Неверный apiTokenInstance"
+      />,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent('Переподключение')
+    expect(screen.getByText('Неверный apiTokenInstance')).toBeInTheDocument()
+  })
+
   it('shows the reconnecting status', () => {
     render(
       <ChatList

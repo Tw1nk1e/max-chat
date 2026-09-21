@@ -1,4 +1,4 @@
-import { deleteNotification, receiveNotification } from '../../../shared/api'
+import { ApiError, deleteNotification, receiveNotification } from '../../../shared/api'
 import type { GreenApiCredentials, NotificationBody } from '../../../shared/api'
 
 type ConnectionStatus = 'online' | 'reconnecting'
@@ -6,13 +6,24 @@ type ConnectionStatus = 'online' | 'reconnecting'
 type PollOptions = {
   credentials: GreenApiCredentials
   signal: AbortSignal
-  onConnectionChange: (status: ConnectionStatus) => void
+  onConnectionChange: (status: ConnectionStatus, error: string | null) => void
   onNotification: (body: NotificationBody) => void
 }
 
 const RECEIVE_TIMEOUT_SECONDS = 20
 const BASE_DELAY_MS = 1000
 const MAX_DELAY_MS = 30000
+
+const SETTINGS_ERROR_MESSAGE =
+  'Не удалось получать сообщения: в личном кабинете GREEN-API включите уведомления и очистите webhookUrl'
+
+function errorMessage(error: unknown): string | null {
+  if (!(error instanceof ApiError) || error.status === 0) {
+    return null
+  }
+
+  return error.status === 400 ? SETTINGS_ERROR_MESSAGE : error.message
+}
 
 function backoffDelay(failures: number): number {
   return Math.min(BASE_DELAY_MS * 2 ** (failures - 1), MAX_DELAY_MS)
@@ -48,7 +59,7 @@ async function pollNotifications({
       })
 
       failures = 0
-      onConnectionChange('online')
+      onConnectionChange('online', null)
 
       if (!notification) {
         continue
@@ -59,13 +70,13 @@ async function pollNotifications({
       } finally {
         await deleteNotification(credentials, notification.receiptId)
       }
-    } catch {
+    } catch (error) {
       if (signal.aborted) {
         return
       }
 
       failures += 1
-      onConnectionChange('reconnecting')
+      onConnectionChange('reconnecting', errorMessage(error))
       await sleep(backoffDelay(failures), signal)
     }
   }

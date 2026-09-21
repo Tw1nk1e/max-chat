@@ -78,7 +78,7 @@ describe('useReceiveMessages', () => {
 
     await waitFor(() => expect(useChatStore.getState().chats).toHaveLength(1))
     expect(useChatStore.getState().chats[0].messages[0].text).toBe('Привет!')
-    expect(result.current).toBe('online')
+    expect(result.current).toEqual({ status: 'online', error: null })
 
     await waitFor(() => expect(receiveCount).toBe(2))
     unmount()
@@ -93,6 +93,6 @@ describe('useReceiveMessages', () => {
 
     const { result } = renderHook(() => useReceiveMessages())
 
-    await waitFor(() => expect(result.current).toBe('reconnecting'))
+    await waitFor(() => expect(result.current.status).toBe('reconnecting'))
   })
 })
