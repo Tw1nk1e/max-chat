@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react'
-import { Avatar, Button } from '../../shared/ui'
+import { Avatar, Button, PlusIcon } from '../../shared/ui'
 import styles from './ChatList.module.css'
 
 type ChatListItem = {
@@ -17,7 +16,6 @@ type ChatListProps = {
   onSelectChat: (id: string) => void
   onNewChat: () => void
   onLogout: () => void
-  newChatForm?: ReactNode
   connectionStatus: ConnectionStatus
   connectionError?: string | null
 }
@@ -28,7 +26,6 @@ function ChatList({
   onSelectChat,
   onNewChat,
   onLogout,
-  newChatForm,
   connectionStatus,
   connectionError,
 }: ChatListProps) {
@@ -36,11 +33,15 @@ function ChatList({
     <div className={styles.list}>
       <div className={styles.header}>
         <h1 className={styles.title}>MAX Chat</h1>
-        <Button variant="secondary" onClick={onNewChat}>
-          Новый чат
-        </Button>
+        <button
+          type="button"
+          className={styles.addButton}
+          onClick={onNewChat}
+          aria-label="Новый чат"
+        >
+          <PlusIcon />
+        </button>
       </div>
-      {newChatForm}
       <div className={styles.status} role="status">
         <span
           className={connectionStatus === 'online' ? styles.dotOnline : styles.dotReconnecting}

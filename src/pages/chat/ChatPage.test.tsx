@@ -63,6 +63,20 @@ describe('ChatPage', () => {
     expect(screen.queryByLabelText('Номер телефона')).not.toBeInTheDocument()
   })
 
+  it('opens the new chat form in a dialog and closes it with Escape', async () => {
+    renderPage()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Новый чат' }))
+
+    expect(screen.getByRole('dialog', { name: 'Новый чат' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Номер телефона')).toHaveFocus()
+
+    await userEvent.keyboard('{Escape}')
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Новый чат' })).toHaveFocus()
+  })
+
   it('shows an error for an invalid phone number', async () => {
     renderPage()
 

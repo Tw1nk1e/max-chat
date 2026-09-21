@@ -1,19 +1,26 @@
 :root {
-  --color-bg: #ffffff;
-  --color-bg-secondary: #f4f5f7;
-  --color-bg-hover: #ebedf0;
-  --color-border: #e4e6eb;
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #6b7280;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
+  color-scheme: dark;
+
+  --color-bg: #15151a;
+  --color-bg-secondary: #1b1b21;
+  --color-surface: #1f1f27;
+  --color-input-bg: #272730;
+  --color-bg-hover: #25252e;
+  --color-bg-active: #2c2c39;
+  --color-border: #2e2e39;
+  --color-text-primary: #f1f1f5;
+  --color-text-secondary: #9b9bab;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2f6fe0;
   --color-accent-contrast: #ffffff;
-  --color-message-in-bg: #f4f5f7;
-  --color-message-out-bg: #2563eb;
+  --color-message-in-bg: #2b2b35;
+  --gradient-message-out: linear-gradient(135deg, #7c5cf0, #5b6cf3);
+  --gradient-avatar: linear-gradient(135deg, #9b7bf7, #5b7cf5);
   --color-message-out-text: #ffffff;
+  --color-overlay: rgba(0, 0, 0, 0.6);
   --color-online: #22c55e;
   --color-reconnecting: #f59e0b;
-  --color-danger: #dc2626;
+  --color-danger: #e5484d;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -31,8 +38,8 @@
   --font-size-md: 15px;
   --font-size-lg: 18px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
 
   --sidebar-width: 320px;
 }

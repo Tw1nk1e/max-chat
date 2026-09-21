@@ -30,6 +30,7 @@ function NewChatForm({ onCreated }: NewChatFormProps) {
         name="phone"
         type="tel"
         autoComplete="off"
+        data-autofocus
         placeholder="+7 999 123-45-67"
         value={phone}
         onChange={(event) => setPhone(event.target.value)}

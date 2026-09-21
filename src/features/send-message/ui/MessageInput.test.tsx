@@ -24,14 +24,45 @@ describe('MessageInput', () => {
     expect(screen.getByLabelText('Сообщение')).toHaveValue('a\nb')
   })
 
-  it('disables the button while the field is empty', async () => {
+  it('shows the send arrow only when there is something to send', async () => {
     render(<MessageInput onSend={() => true} />)
 
-    expect(screen.getByRole('button', { name: 'Отправить' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Отправить' })).not.toBeInTheDocument()
+
+    await userEvent.type(screen.getByLabelText('Сообщение'), '   ')
+    expect(screen.queryByRole('button', { name: 'Отправить' })).not.toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('Сообщение'), 'Привет')
+    expect(screen.getByRole('button', { name: 'Отправить' })).toBeInTheDocument()
+  })
 
-    expect(screen.getByRole('button', { name: 'Отправить' })).toBeEnabled()
+  it('hides the send arrow again after sending', async () => {
+    render(<MessageInput onSend={() => true} />)
+
+    await userEvent.type(screen.getByLabelText('Сообщение'), 'Привет')
+    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }))
+
+    expect(screen.queryByRole('button', { name: 'Отправить' })).not.toBeInTheDocument()
+  })
+
+  it('grows with the text but never above the limit', async () => {
+    let contentHeight = 40
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get: () => contentHeight,
+    })
+    render(<MessageInput onSend={() => true} />)
+    const input = screen.getByLabelText('Сообщение')
+
+    contentHeight = 88
+    await userEvent.type(input, 'a')
+    expect(input.style.height).toBe('88px')
+
+    contentHeight = 500
+    await userEvent.type(input, 'b')
+    expect(input.style.height).toBe('160px')
+
+    Reflect.deleteProperty(HTMLElement.prototype, 'scrollHeight')
   })
 
   it('sends on button click', async () => {

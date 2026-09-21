@@ -1,9 +1,10 @@
-import { useId, useState } from 'react'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
-import { Button } from '../../../shared/ui'
+import { ArrowUpIcon } from '../../../shared/ui'
 import styles from './MessageInput.module.css'
 
 const MAX_MESSAGE_LENGTH = 4000
+const MAX_INPUT_HEIGHT = 160
 
 type MessageInputProps = {
   onSend: (text: string) => boolean
@@ -11,7 +12,20 @@ type MessageInputProps = {
 
 function MessageInput({ onSend }: MessageInputProps) {
   const inputId = useId()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [text, setText] = useState('')
+  const canSend = text.trim().length > 0
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) {
+      return
+    }
+
+    textarea.style.height = 'auto'
+    const borders = textarea.offsetHeight - textarea.clientHeight
+    textarea.style.height = `${Math.min(textarea.scrollHeight + borders, MAX_INPUT_HEIGHT)}px`
+  }, [text])
 
   function submit() {
     if (onSend(text)) {
@@ -37,6 +51,7 @@ function MessageInput({ onSend }: MessageInputProps) {
         Сообщение
       </label>
       <textarea
+        ref={textareaRef}
         id={inputId}
         className={styles.textarea}
         placeholder="Напишите сообщение"
@@ -46,9 +61,11 @@ function MessageInput({ onSend }: MessageInputProps) {
         onChange={(event) => setText(event.target.value)}
         onKeyDown={handleKeyDown}
       />
-      <Button type="submit" disabled={!text.trim()}>
-        Отправить
-      </Button>
+      {canSend ? (
+        <button type="submit" className={styles.send} aria-label="Отправить">
+          <ArrowUpIcon size={20} />
+        </button>
+      ) : null}
     </form>
   )
 }

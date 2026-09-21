@@ -74,7 +74,7 @@
 
 .bubbleOut {
   align-self: flex-end;
-  background: var(--color-message-out-bg);
+  background: var(--gradient-message-out);
   color: var(--color-message-out-text);
 }
 

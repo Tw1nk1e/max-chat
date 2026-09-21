@@ -5,8 +5,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background: var(--gradient-avatar);
+  color: #ffffff;
   font-size: var(--font-size-sm);
   font-weight: 600;
   flex-shrink: 0;

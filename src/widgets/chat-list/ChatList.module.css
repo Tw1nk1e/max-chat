@@ -18,6 +18,30 @@
   font-size: var(--font-size-lg);
 }
 
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.addButton:hover {
+  background: var(--color-accent-hover);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+}
+
 .status {
   display: flex;
   align-items: center;
@@ -87,7 +111,7 @@
 }
 
 .itemActive {
-  background: var(--color-bg-hover);
+  background: var(--color-bg-active);
 }
 
 .itemBody {

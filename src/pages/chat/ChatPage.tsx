@@ -6,6 +6,7 @@ import { NewChatForm } from '../../features/create-chat'
 import { useReceiveMessages } from '../../features/receive-messages'
 import { MessageInput, useSendMessage } from '../../features/send-message'
 import { formatTime } from '../../shared/lib'
+import { Modal } from '../../shared/ui'
 import { ChatList } from '../../widgets/chat-list'
 import { ChatWindow } from '../../widgets/chat-window'
 import styles from './ChatPage.module.css'
@@ -54,11 +55,8 @@ function ChatPage() {
           chats={listItems}
           activeChatId={activeChatId}
           onSelectChat={selectChat}
-          onNewChat={() => setIsNewChatOpen((isOpen) => !isOpen)}
+          onNewChat={() => setIsNewChatOpen(true)}
           onLogout={logout}
-          newChatForm={
-            isNewChatOpen ? <NewChatForm onCreated={() => setIsNewChatOpen(false)} /> : null
-          }
           connectionStatus={connectionStatus}
           connectionError={connectionError}
         />
@@ -76,6 +74,9 @@ function ChatPage() {
           onRetryMessage={(messageId) => activeChat && retry(activeChat.id, messageId)}
         />
       </main>
+      <Modal open={isNewChatOpen} title="Новый чат" onClose={() => setIsNewChatOpen(false)}>
+        <NewChatForm onCreated={() => setIsNewChatOpen(false)} />
+      </Modal>
     </div>
   )
 }
