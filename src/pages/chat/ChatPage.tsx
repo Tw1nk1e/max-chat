@@ -1,48 +1,67 @@
 import { useState } from 'react'
+import { useChatStore } from '../../entities/chat'
 import { useLogout } from '../../features/auth'
+import { NewChatForm } from '../../features/create-chat'
+import { MessageInput, useSendMessage } from '../../features/send-message'
+import { formatPhone, formatTime } from '../../shared/lib'
 import { ChatList } from '../../widgets/chat-list'
-import type { ChatListItem } from '../../widgets/chat-list'
 import { ChatWindow } from '../../widgets/chat-window'
-import type { ChatWindowMessage } from '../../widgets/chat-window'
 import styles from './ChatPage.module.css'
 
-const mockChats: ChatListItem[] = [
-  { id: '1', phone: '+7 999 123-45-67', lastMessage: 'Привет! Как дела?', time: '14:32' },
-  { id: '2', phone: '+7 912 555-11-22', lastMessage: 'Отправил документы', time: 'Вчера' },
-]
-
-const mockMessages: Record<string, ChatWindowMessage[]> = {
-  '1': [
-    { id: 'm1', text: 'Привет!', time: '14:20', direction: 'out' },
-    { id: 'm2', text: 'Привет! Как дела?', time: '14:32', direction: 'in' },
-  ],
-  '2': [],
-}
-
 function ChatPage() {
-  const [activeChatId, setActiveChatId] = useState<string | null>(mockChats[0].id)
+  const chats = useChatStore((state) => state.chats)
+  const activeChatId = useChatStore((state) => state.activeChatId)
+  const selectChat = useChatStore((state) => state.selectChat)
+  const { send, retry } = useSendMessage()
   const logout = useLogout()
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false)
 
-  const activeChat = mockChats.find((chat) => chat.id === activeChatId) ?? null
-  const messages = activeChatId ? mockMessages[activeChatId] : []
+  const activeChat = chats.find((chat) => chat.id === activeChatId) ?? null
+
+  const listItems = chats.map((chat) => {
+    const lastMessage = chat.messages.at(-1)
+    return {
+      id: chat.id,
+      phone: formatPhone(chat.phone),
+      lastMessage: lastMessage?.text ?? '',
+      time: lastMessage ? formatTime(lastMessage.timestamp) : '',
+    }
+  })
+
+  const windowMessages = (activeChat?.messages ?? []).map((message) => ({
+    id: message.id,
+    text: message.text,
+    time: formatTime(message.timestamp),
+    direction: message.direction,
+    status: message.status,
+  }))
 
   return (
     <div className={styles.layout} data-chat-active={activeChat ? 'true' : 'false'}>
       <aside className={styles.sidebar}>
         <ChatList
-          chats={mockChats}
+          chats={listItems}
           activeChatId={activeChatId}
-          onSelectChat={setActiveChatId}
-          onNewChat={() => {}}
+          onSelectChat={selectChat}
+          onNewChat={() => setIsNewChatOpen((isOpen) => !isOpen)}
           onLogout={logout}
+          newChatForm={
+            isNewChatOpen ? <NewChatForm onCreated={() => setIsNewChatOpen(false)} /> : null
+          }
           connectionStatus="online"
         />
       </aside>
       <main className={styles.main}>
         <ChatWindow
-          phone={activeChat?.phone ?? null}
-          messages={messages}
-          onBack={() => setActiveChatId(null)}
+          phone={activeChat ? formatPhone(activeChat.phone) : null}
+          messages={windowMessages}
+          composer={
+            activeChat ? (
+              <MessageInput key={activeChat.id} onSend={(text) => send(activeChat.id, text)} />
+            ) : null
+          }
+          onBack={() => selectChat(null)}
+          onRetryMessage={(messageId) => activeChat && retry(activeChat.id, messageId)}
         />
       </main>
     </div>

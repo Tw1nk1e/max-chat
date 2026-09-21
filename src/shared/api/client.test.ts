@@ -1,7 +1,13 @@
 import { HttpResponse, http } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../test/msw/server'
-import { deleteNotification, getStateInstance, receiveNotification, sendMessage } from './client'
+import {
+  checkAccount,
+  deleteNotification,
+  getStateInstance,
+  receiveNotification,
+  sendMessage,
+} from './client'
 import { ApiError } from './errors'
 import type { GreenApiCredentials } from './types'
 
@@ -73,6 +79,45 @@ describe('sendMessage', () => {
     await expect(sendMessage(credentials, '10000000', 'Привет!')).rejects.toMatchObject({
       status: 429,
       message: 'Слишком много запросов, попробуйте позже',
+    })
+  })
+})
+
+describe('checkAccount', () => {
+  it('sends the phone number and returns chatId', async () => {
+    let receivedBody: unknown
+
+    server.use(
+      http.post(methodUrl('checkAccount'), async ({ request }) => {
+        receivedBody = await request.json()
+        return HttpResponse.json({ exist: true, chatId: '10000000', fromCache: false })
+      }),
+    )
+
+    const result = await checkAccount(credentials, 79991234567)
+
+    expect(result).toEqual({ exist: true, chatId: '10000000', fromCache: false })
+    expect(receivedBody).toEqual({ phoneNumber: 79991234567 })
+  })
+
+  it('throws ApiError when the check limit is reached', async () => {
+    server.use(
+      http.post(methodUrl('checkAccount'), () =>
+        HttpResponse.json({ status: false, reason: 'User get contact info limit reached' }),
+      ),
+    )
+
+    await expect(checkAccount(credentials, 79991234567)).rejects.toMatchObject({
+      message: 'Слишком много проверок номеров, попробуйте позже',
+    })
+  })
+
+  it('maps HTTP 469 to a readable message', async () => {
+    server.use(http.post(methodUrl('checkAccount'), () => new HttpResponse(null, { status: 469 })))
+
+    await expect(checkAccount(credentials, 79991234567)).rejects.toMatchObject({
+      status: 469,
+      message: 'Слишком много проверок номеров, попробуйте позже',
     })
   })
 })

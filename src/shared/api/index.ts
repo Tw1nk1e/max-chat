@@ -1,4 +1,10 @@
-export { getStateInstance, sendMessage, receiveNotification, deleteNotification } from './client'
+export {
+  checkAccount,
+  deleteNotification,
+  getStateInstance,
+  receiveNotification,
+  sendMessage,
+} from './client'
 export { ApiError } from './errors'
 export { isMessageNotification, isTextMessage } from './notifications'
 export type {
@@ -6,6 +12,7 @@ export type {
   InstanceState,
   GetStateInstanceResult,
   SendMessageResult,
+  CheckAccountResult,
   DeleteNotificationResult,
   ChatType,
   NotificationSenderData,

@@ -1,6 +1,5 @@
-import { useId } from 'react'
-import type { FormEvent } from 'react'
-import { Avatar, Button } from '../../shared/ui'
+import type { ReactNode } from 'react'
+import { Avatar } from '../../shared/ui'
 import styles from './ChatWindow.module.css'
 
 type ChatWindowMessage = {
@@ -8,21 +7,18 @@ type ChatWindowMessage = {
   text: string
   time: string
   direction: 'in' | 'out'
+  status: 'pending' | 'sent' | 'error'
 }
 
 type ChatWindowProps = {
   phone: string | null
   messages: ChatWindowMessage[]
+  composer: ReactNode
   onBack: () => void
+  onRetryMessage: (messageId: string) => void
 }
 
-function ChatWindow({ phone, messages, onBack }: ChatWindowProps) {
-  const inputId = useId()
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-  }
-
+function ChatWindow({ phone, messages, composer, onBack, onRetryMessage }: ChatWindowProps) {
   if (!phone) {
     return (
       <div className={styles.emptyChat}>
@@ -53,25 +49,29 @@ function ChatWindow({ phone, messages, onBack }: ChatWindowProps) {
             <div
               key={message.id}
               className={message.direction === 'out' ? styles.bubbleOut : styles.bubbleIn}
+              data-status={message.status}
             >
               <p className={styles.bubbleText}>{message.text}</p>
-              <span className={styles.bubbleTime}>{message.time}</span>
+              <span className={styles.bubbleMeta}>
+                {message.status === 'error' ? (
+                  <>
+                    <span>Не отправлено</span>
+                    <button
+                      type="button"
+                      className={styles.retry}
+                      onClick={() => onRetryMessage(message.id)}
+                    >
+                      Повторить
+                    </button>
+                  </>
+                ) : null}
+                <span>{message.status === 'pending' ? 'Отправка...' : message.time}</span>
+              </span>
             </div>
           ))
         )}
       </div>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.visuallyHidden} htmlFor={inputId}>
-          Сообщение
-        </label>
-        <textarea
-          id={inputId}
-          className={styles.textarea}
-          placeholder="Напишите сообщение"
-          rows={1}
-        />
-        <Button type="submit">Отправить</Button>
-      </form>
+      {composer}
     </div>
   )
 }

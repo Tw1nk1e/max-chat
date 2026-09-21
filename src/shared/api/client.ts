@@ -1,5 +1,12 @@
-import { createApiError, createNetworkError } from './errors'
+import {
+  ApiError,
+  checkAccountRejectionMessage,
+  createApiError,
+  createNetworkError,
+} from './errors'
 import type {
+  CheckAccountRejected,
+  CheckAccountResult,
   DeleteNotificationResult,
   GetStateInstanceResult,
   GreenApiCredentials,
@@ -49,6 +56,26 @@ async function sendMessage(
   })
 }
 
+async function checkAccount(
+  credentials: GreenApiCredentials,
+  phoneNumber: number,
+): Promise<CheckAccountResult> {
+  const result = await request<CheckAccountResult | CheckAccountRejected>(
+    buildUrl(credentials, 'checkAccount'),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber }),
+    },
+  )
+
+  if ('reason' in result) {
+    throw new ApiError(200, checkAccountRejectionMessage(result.reason))
+  }
+
+  return result
+}
+
 async function receiveNotification(
   credentials: GreenApiCredentials,
   options?: { receiveTimeout?: number; signal?: AbortSignal },
@@ -68,4 +95,4 @@ async function deleteNotification(
   return request<DeleteNotificationResult>(url, { method: 'DELETE' })
 }
 
-export { getStateInstance, sendMessage, receiveNotification, deleteNotification }
+export { checkAccount, deleteNotification, getStateInstance, receiveNotification, sendMessage }

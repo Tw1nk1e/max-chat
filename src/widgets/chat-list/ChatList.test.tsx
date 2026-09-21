@@ -63,6 +63,22 @@ describe('ChatList', () => {
     expect(onLogout).toHaveBeenCalledOnce()
   })
 
+  it('renders the new chat form slot', () => {
+    render(
+      <ChatList
+        chats={chats}
+        activeChatId={null}
+        onSelectChat={() => {}}
+        onNewChat={() => {}}
+        onLogout={() => {}}
+        newChatForm={<div>new chat form</div>}
+        connectionStatus="online"
+      />,
+    )
+
+    expect(screen.getByText('new chat form')).toBeInTheDocument()
+  })
+
   it('shows the reconnecting status', () => {
     render(
       <ChatList

@@ -18,12 +18,24 @@ function messageForStatus(status: number): string {
       return 'Слишком много запросов, попробуйте позже'
     case 400:
       return 'Некорректный запрос к GREEN-API'
+    case 469:
+      return 'Слишком много проверок номеров, попробуйте позже'
     case 500:
     case 502:
       return 'GREEN-API временно недоступен, попробуйте позже'
     default:
       return 'Не удалось выполнить запрос к GREEN-API'
   }
+}
+
+function checkAccountRejectionMessage(reason: string): string {
+  if (reason.includes('limit')) {
+    return 'Слишком много проверок номеров, попробуйте позже'
+  }
+  if (reason.includes('not authorized')) {
+    return 'Инстанс не авторизован или ещё запускается'
+  }
+  return 'Не удалось проверить номер'
 }
 
 function createApiError(status: number): ApiError {
@@ -34,4 +46,4 @@ function createNetworkError(): ApiError {
   return new ApiError(0, 'Нет соединения с сетью')
 }
 
-export { ApiError, createApiError, createNetworkError }
+export { ApiError, checkAccountRejectionMessage, createApiError, createNetworkError }

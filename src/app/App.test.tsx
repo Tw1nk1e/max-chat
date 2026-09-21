@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { useSessionStore } from '../entities/session'
+import { createQueryWrapper } from '../test/queryWrapper'
 import App from './App'
 
 afterEach(() => {
@@ -23,7 +24,7 @@ describe('App', () => {
       apiTokenInstance: 'test-token',
     })
 
-    render(<App />)
+    render(<App />, { wrapper: createQueryWrapper() })
 
     expect(screen.queryByLabelText('idInstance')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Новый чат' })).toBeInTheDocument()

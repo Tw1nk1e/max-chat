@@ -15,6 +15,17 @@ type SendMessageResult = {
   idMessage: string
 }
 
+type CheckAccountResult = {
+  exist: boolean
+  chatId: string
+  fromCache: boolean
+}
+
+type CheckAccountRejected = {
+  status: false
+  reason: string
+}
+
 type DeleteNotificationResult = {
   result: boolean
   reason: string
@@ -82,6 +93,8 @@ export type {
   InstanceState,
   GetStateInstanceResult,
   SendMessageResult,
+  CheckAccountResult,
+  CheckAccountRejected,
   DeleteNotificationResult,
   ChatType,
   NotificationSenderData,
